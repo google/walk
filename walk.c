@@ -77,7 +77,7 @@ static int walk(const char dirname[])
 		filename = realloc2(filename,
 			strlen(dirname) + 1 + strlen(f->d_name) + 1);
 		strcpy3(filename, dirname, "/", f->d_name);
-		// TODO(bbaren): Emulate Plan 9's cleanname(3).
+		// TODO(bbaren@google.com): Emulate Plan 9's cleanname(3).
 		puts(filename);
 		// Walk the file if we can successfully open it as a directory.
 		// Don't worry about it if it's not one (walk(filename) == 2).
