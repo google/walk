@@ -13,11 +13,22 @@
 // limitations under the License.
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <dirent.h>
+#include <getopt.h>
+
+static const char SHORT_USAGE[] = "Usage: walk [DIRECTORY...]\n";
+
+static const char HELP[] =
+	"Recursively walk the specified directories (or current directory, if none is\n"
+	"specified.\n\n"
+	"      --help                  display this help and exit\n";
+
+static const char ASK_FOR_HELP[] = "Try 'walk --help' for more information.\n";
 
 static const char *const JUST_CURRENT_DIRECTORY[] = {".", NULL};
 
@@ -86,11 +97,33 @@ static int walk(const char dirname[])
 	return r;
 }
 
-int main(const int argc, const char *const argv[])
+int main(const int argc, char *const argv[])
 {
+	static const struct option long_options[] = {
+		{"help", no_argument, NULL, 'h'},
+		{NULL, 0, NULL, 0},
+	};
+	while (true) {
+		const int c = getopt_long(argc, argv, "", long_options, NULL);
+		if (c == -1)
+			break;
+		switch (c) {
+		case 'h':
+			fputs(SHORT_USAGE, stdout);
+			fputs(HELP, stdout);
+			return 0;
+		case '?':
+			fputs(ASK_FOR_HELP, stderr);
+			return 1;
+		default:
+			fputs("Internal error; please report.\n", stderr);
+			return 1;
+		}
+	}
+
 	int r = 0;
-	const char *const *const dirs =
-		argc == 1 ? JUST_CURRENT_DIRECTORY : argv + 1;
+	const char *const *const dirs = argc == optind ? JUST_CURRENT_DIRECTORY
+		: (const char *const *)argv + optind;
 	for (int i = 0; dirs[i]; ++i) {
 		puts(dirs[i]);
 		r |= walk(dirs[i]);

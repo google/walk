@@ -13,6 +13,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+short_usage() {
+	echo 'Usage: sor SNIPPET...'
+}
+
+help() {
+	short_usage
+	cat <<EOF
+For each line from standard input, evaluate the specified SNIPPETs under Bash
+with the line as the argument. Print the line if any snippet exits with
+status 0.
+
+      --help                 display this help and exit
+EOF
+}
+
+ask_for_help() {
+	echo "Try 'sor --help' for more information."
+}
+
+if ! temp=$(getopt -s bash -n sor -o '' -l help -- "$@"); then
+	ask_for_help >&2
+	exit 1
+fi
+eval set -- "$temp"
+unset temp
+while true; do
+	case "$1" in
+	--help)
+		help
+		exit 0
+		;;
+	--)
+		shift
+		break
+		;;
+	*)
+		echo >&2 'Internal error; please report.'
+		exit 1
+		;;
+	esac
+done
+
 while read file; do
 	for test in "$@"; do
 		if eval "$test \"$file\""; then
