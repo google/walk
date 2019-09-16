@@ -22,6 +22,20 @@ Recursively list the specified
 .I DIRECTORY
 (or directories). Recursively list the current directory if no directory is
 specified.
+.SH "EXIT STATUS"
+.BR walk 's
+exit status is a bitmask indicating errors that occurred.
+.TP
+0x0
+No errors occurred.
+.TP
+0x1
+General error (usually because
+.B walk
+could not traverse a directory due to insufficient permissions).
+.TP
+0x2
+One of the arguments was not a directory.
 .SH NOTES
 .B walk
 does not traverse symlinks.
