@@ -41,7 +41,7 @@ static struct dirent *readdir2(DIR *const dirp)
 }
 
 // Like realloc(3), but exits the binary in an out-of-memory situation.
-static void *realloc2(void *ptr, const size_t size)
+static void *xrealloc(void *ptr, const size_t size)
 {
 	if (!(ptr = realloc(ptr, size))) {
 		perror("realloc");
@@ -74,7 +74,7 @@ static int walk(const char dirname[])
 		if (strcmp(f->d_name, ".") == 0
 				|| strcmp(f->d_name, "..") == 0)
 			continue;
-		filename = realloc2(filename,
+		filename = xrealloc(filename,
 			strlen(dirname) + 1 + strlen(f->d_name) + 1);
 		strcpy3(filename, dirname, "/", f->d_name);
 		// TODO(bbaren@google.com): Emulate Plan 9's cleanname(3).
