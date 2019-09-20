@@ -56,7 +56,8 @@ static void strcpy3(char *dest, const char *s1, const char *s2, const char *s3)
 	stpcpy(stpcpy(stpcpy(dest, s1), s2), s3);
 }
 
-static void put_filename(const char *filename, bool null_terminate) {
+static void put_filename(const char *filename, bool null_terminate)
+{
 	if (null_terminate) {
 		fputs(filename, stdout);
 		fputc(0, stdout);
@@ -81,21 +82,20 @@ static int walk(const char dirname[], bool null_terminate)
 	int r = 0;
 	char *filename = NULL;
 	for (const struct dirent *f = readdir2(dir); f; f = readdir2(dir)) {
-		if (strcmp(f->d_name, ".") == 0
-				|| strcmp(f->d_name, "..") == 0)
+		if (strcmp(f->d_name, ".") == 0 || strcmp(f->d_name, "..") == 0)
 			continue;
-		filename = xrealloc(filename,
-			strlen(dirname) + 1 + strlen(f->d_name) + 1);
+		filename = xrealloc(
+			filename, strlen(dirname) + 1 + strlen(f->d_name) + 1);
 		strcpy3(filename, dirname, "/", f->d_name);
 		// TODO(bbaren@google.com): Emulate Plan 9's cleanname(3).
 		put_filename(filename, null_terminate);
 		// Walk the file if we can successfully open it as a directory.
 		// Don't worry about it if it's not one (walk(filename) == 2).
 		if ((f->d_type == DT_DIR || f->d_type == DT_UNKNOWN)
-				&& walk(filename, null_terminate) == 1)
+			&& walk(filename, null_terminate) == 1)
 			r = 1;
 	}
-	if (errno) {	// from readdir
+	if (errno) {  // from readdir
 		perror(dirname);
 		r = 1;
 	}
@@ -117,8 +117,7 @@ int main(const int argc, char *const argv[])
 	bool null_terminate = false;
 	while (true) {
 		const int c = getopt_long(argc, argv, "0", long_options, NULL);
-		if (c == -1)
-			break;
+		if (c == -1) break;
 		switch (c) {
 		case 'h':
 			fputs(SHORT_USAGE, stdout);
@@ -137,7 +136,8 @@ int main(const int argc, char *const argv[])
 	}
 
 	int r = 0;
-	const char *const *const dirs = argc == optind ? JUST_CURRENT_DIRECTORY
+	const char *const *const dirs = argc == optind
+		? JUST_CURRENT_DIRECTORY
 		: (const char *const *)argv + optind;
 	for (int i = 0; dirs[i]; ++i) {
 		put_filename(dirs[i], null_terminate);
