@@ -34,32 +34,32 @@ ask_for_help() {
 }
 
 read_filename() {
-	local null_terminate="$1"
-	local target_var="$2"
-	if [ "$null_terminate" = "true" ]; then
-		IFS= read -r -d '' "$target_var"
+	local null_terminate=$1
+	local target_var=$2
+	if [ $null_terminate = true ]; then
+		IFS= read -r -d '' $target_var
 	else
-		read "$target_var"
+		read $target_var
 	fi
 }
 
 print_filename() {
-	local null_terminate="$1"
+	local null_terminate=$1
 	local filename="$2"
-	if [ "$null_terminate" = "true" ]; then
+	if [ $null_terminate = true ]; then
 		printf '%s\0' "$filename"
 	else
 		echo "$filename"
 	fi
 }
 
-if ! temp=$(getopt -s bash -n sor -o '0' -l null,help -- "$@"); then
+if ! temp=$(getopt -s bash -n sor -o 0 -l null,help -- "$@"); then
 	ask_for_help >&2
 	exit 1
 fi
 eval set -- "$temp"
 unset temp
-null_terminate="false"
+null_terminate=false
 while true; do
 	case "$1" in
 	--help)
@@ -68,7 +68,7 @@ while true; do
 		;;
 	-0|--null)
 		shift
-		null_terminate="true"
+		null_terminate=true
 		;;
 	--)
 		shift
@@ -81,10 +81,10 @@ while true; do
 	esac
 done
 
-while read_filename "$null_terminate" file; do
+while read_filename $null_terminate file; do
 	for test in "$@"; do
 		if eval "$test \"$file\""; then
-			print_filename "$null_terminate" "$file"
+			print_filename $null_terminate "$file"
 			continue 2
 		fi
 	done
