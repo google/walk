@@ -16,12 +16,21 @@
 walk \- walk file system
 .SH SYNOPSIS
 .B walk
+.RI [\| OPTION ...\]
 .RI [\| DIRECTORY ...\]
 .SH DESCRIPTION
 Recursively list the specified
 .I DIRECTORY
 (or directories). Recursively list the current directory if no directory is
 specified.
+.SH OPTIONS
+.TP
+\fB-0, --null\fP
+Terminate output filenames using the null character \fB\\0\fP instead of newlines.
+Suitable for use with \fBsor -0\fP.
+.TP
+\fB--help\fP
+Print a summary of the usage of \fBwalk\fP and exit.
 .SH "EXIT STATUS"
 .BR walk 's
 exit status is a bitmask indicating errors that occurred.

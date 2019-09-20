@@ -15,6 +15,10 @@ you can say
 
     walk | grep foo | sor 'test -f'
 
+If your filenames might contain newlines, you can say
+
+    walk -0 | grep -z foo | sor -0 'test -f'
+
 [find]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
 
 

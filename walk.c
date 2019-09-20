@@ -21,11 +21,12 @@
 #include <dirent.h>
 #include <getopt.h>
 
-static const char SHORT_USAGE[] = "Usage: walk [DIRECTORY...]\n";
+static const char SHORT_USAGE[] = "Usage: walk [OPTION...] [DIRECTORY...]\n";
 
 static const char HELP[] =
 	"Recursively walk the specified directories (or current directory, if none is\n"
 	"specified.\n\n"
+	"      -0, --null              separate filenames by a null character\n"
 	"      --help                  display this help and exit\n";
 
 static const char ASK_FOR_HELP[] = "Try 'walk --help' for more information.\n";
@@ -55,10 +56,19 @@ static void strcpy3(char *dest, const char *s1, const char *s2, const char *s3)
 	stpcpy(stpcpy(stpcpy(dest, s1), s2), s3);
 }
 
+static void put_filename(const char *filename, bool null_terminate) {
+	if (null_terminate) {
+		fputs(filename, stdout);
+		fputc(0, stdout);
+	} else {
+		puts(filename);
+	}
+}
+
 // Walks the directory named dirname, printing the names of all files it
 // contains (but not the name of the directory itself). Returns 2 if dirname is
 // not a directory and 1 if another error occurs.
-static int walk(const char dirname[])
+static int walk(const char dirname[], bool null_terminate)
 {
 	DIR *const dir = opendir(dirname);
 	if (!dir) {
@@ -78,11 +88,11 @@ static int walk(const char dirname[])
 			strlen(dirname) + 1 + strlen(f->d_name) + 1);
 		strcpy3(filename, dirname, "/", f->d_name);
 		// TODO(bbaren@google.com): Emulate Plan 9's cleanname(3).
-		puts(filename);
+		put_filename(filename, null_terminate);
 		// Walk the file if we can successfully open it as a directory.
 		// Don't worry about it if it's not one (walk(filename) == 2).
 		if ((f->d_type == DT_DIR || f->d_type == DT_UNKNOWN)
-				&& walk(filename) == 1)
+				&& walk(filename, null_terminate) == 1)
 			r = 1;
 	}
 	if (errno) {	// from readdir
@@ -101,10 +111,12 @@ int main(const int argc, char *const argv[])
 {
 	static const struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
+		{"null", no_argument, NULL, '0'},
 		{NULL, 0, NULL, 0},
 	};
+	bool null_terminate = false;
 	while (true) {
-		const int c = getopt_long(argc, argv, "", long_options, NULL);
+		const int c = getopt_long(argc, argv, "0", long_options, NULL);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -112,6 +124,9 @@ int main(const int argc, char *const argv[])
 			fputs(SHORT_USAGE, stdout);
 			fputs(HELP, stdout);
 			return 0;
+		case '0':
+			null_terminate = true;
+			break;
 		case '?':
 			fputs(ASK_FOR_HELP, stderr);
 			return 1;
@@ -125,8 +140,8 @@ int main(const int argc, char *const argv[])
 	const char *const *const dirs = argc == optind ? JUST_CURRENT_DIRECTORY
 		: (const char *const *)argv + optind;
 	for (int i = 0; dirs[i]; ++i) {
-		puts(dirs[i]);
-		r |= walk(dirs[i]);
+		put_filename(dirs[i], null_terminate);
+		r |= walk(dirs[i], null_terminate);
 	}
 	return r;
 }
