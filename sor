@@ -21,8 +21,7 @@ help() {
 	short_usage
 	cat <<EOF
 For each line from standard input, evaluate the specified SNIPPETs under Bash
-with the line as the argument. Print the line if any snippet exits with
-status 0.
+with the line as the argument. Print the line if any snippet returns status 0.
 
       -0, --null             separate input and output filenames by null
       --help                 display this help and exit
