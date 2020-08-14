@@ -21,8 +21,7 @@ help() {
 	short_usage
 	cat <<EOF
 For each line from standard input, evaluate the specified SNIPPETs under Bash
-with the line as the argument. Print the line if any snippet exits with
-status 0.
+with the line as the argument. Print the line if any snippet returns status 0.
 
       -0, --null             separate input and output filenames by null
       --help                 display this help and exit
@@ -36,23 +35,25 @@ ask_for_help() {
 read_filename() {
 	local null_terminate=$1
 	local target_var=$2
-	if [ $null_terminate = true ]; then
-		IFS= read -r -d '' $target_var
+	if [[ $null_terminate == true ]]; then
+		IFS= read -r -d '' "$target_var"
 	else
-		read $target_var
+		# shellcheck disable=SC2229
+		read -r "$target_var"
 	fi
 }
 
 print_filename() {
 	local null_terminate=$1
-	local filename="$2"
-	if [ $null_terminate = true ]; then
+	local filename=$2
+	if [[ $null_terminate == true ]]; then
 		printf '%s\0' "$filename"
 	else
-		echo "$filename"
+		printf '%s\n' "$filename"
 	fi
 }
 
+# This requires util-linux getopt.
 if ! temp=$(getopt -s bash -n sor -o 0 -l null,help -- "$@"); then
 	ask_for_help >&2
 	exit 1
@@ -81,10 +82,12 @@ while true; do
 	esac
 done
 
-while read_filename $null_terminate file; do
+while read_filename "$null_terminate" file; do
+	# shellcheck disable=SC2154
+	qfile=$(printf '%q' "$file")
 	for test in "$@"; do
-		if eval "$test \"$file\""; then
-			print_filename $null_terminate "$file"
+		if eval "$test $qfile"; then
+			print_filename "$null_terminate" "$file"
 			continue 2
 		fi
 	done
